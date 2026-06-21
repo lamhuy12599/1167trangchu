@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Nội Bộ</title>
+    
+    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/4/40/7-eleven_logo.svg" type="image/svg+xml">
+    
+    <style>
+        /* CSS Reset & Font */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+        
+        :root {
+            --7e-green: #008062;
+            --7e-orange: #F37021;
+            --7e-red: #E2231A;
+            --bg-main: #F4F5F7;
+            --bg-card: #ffffff;
+            --text-main: #333;
+            --border-color: #e0e0e0;
+        }
+
+        /* Nền của trang chủ */
+        body { 
+            background-color: var(--bg-main); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px; 
+        }
+        
+        /* Khung Menu */
+        .menu-container { 
+            width: 100%; 
+            max-width: 420px; 
+            background: var(--bg-card); 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
+            padding: 40px 25px; 
+            text-align: center; 
+            position: relative; 
+            overflow: hidden; 
+        }
+        
+        /* Dải màu đặc trưng */
+        .menu-container::before { 
+            content: ''; 
+            position: absolute; 
+            top: 0; left: 0; 
+            width: 100%; height: 8px; 
+            background: linear-gradient(to right, var(--7e-green) 33%, var(--7e-red) 33%, var(--7e-red) 66%, var(--7e-orange) 66%); 
+        }
+
+        .logo { height: 55px; margin-bottom: 15px; }
+        
+        h1 { 
+            color: var(--7e-green); 
+            font-size: 22px; 
+            font-weight: 800; 
+            margin-bottom: 8px; 
+            letter-spacing: 0.5px;
+        }
+        
+        p.subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 35px;
+        }
+
+        /* Nút bấm */
+        .app-btn { 
+            display: flex; 
+            align-items: center; 
+            justify-content: flex-start;
+            width: 100%; 
+            padding: 18px 20px; 
+            margin-bottom: 16px; 
+            background: #fff; 
+            border: 2px solid var(--border-color); 
+            border-radius: 14px; 
+            text-decoration: none; 
+            color: var(--text-main); 
+            transition: all 0.3s ease; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-btn:hover { 
+            border-color: var(--7e-green); 
+            transform: translateY(-3px); 
+            box-shadow: 0 8px 15px rgba(0, 128, 98, 0.1); 
+        }
+
+        .app-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Icon bên trong nút */
+        .btn-icon {
+            font-size: 26px;
+            margin-right: 15px;
+            background: #f8f9fa;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            flex-shrink: 0;
+        }
+
+        /* Chữ bên trong nút */
+        .btn-text {
+            text-align: left;
+        }
+        .btn-title {
+            font-size: 16px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 3px;
+        }
+        .btn-desc {
+            font-size: 12px;
+            color: #888;
+            font-weight: 400;
+        }
+
+        /* Màu nhấn cho từng nút */
+        .btn-1 .btn-icon { background: #fff0e6; } /* Cam nhạt */
+        .btn-2 .btn-icon { background: #e6f2ef; } /* Xanh lá nhạt */
+        .btn-3 .btn-icon { background: #e6f0fa; } /* MỚI: Xanh dương nhạt */
+
+        /* Footer nhỏ */
+        .footer {
+            margin-top: 25px;
+            font-size: 12px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="menu-container">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/40/7-eleven_logo.svg" alt="Logo" class="logo">
+        
+        <h1>HỆ THỐNG NỘI BỘ</h1>
+        <p class="subtitle">Vui lòng chọn công cụ làm việc</p>
+        
+        <a href="https://1167kiemtragia.netlify.app/" class="app-btn btn-1">
+            <div class="btn-icon">🔍</div>
+            <div class="btn-text">
+                <span class="btn-title">Tra Cứu Sản Phẩm</span>
+                <span class="btn-desc">Check giá, quét mã vạch & return</span>
+            </div>
+        </a>
+
+        <a href="https://1167kiemdate.netlify.app" class="app-btn btn-2">
+            <div class="btn-icon">📋</div>
+            <div class="btn-text">
+                <span class="btn-title">Kiểm date</span>
+                <span class="btn-desc">Kiểm date</span>
+            </div>
+        </a>
+
+        <a href="https://1167congthuc.netlify.app/" class="app-btn btn-3">
+            <div class="btn-icon">📊</div> <div class="btn-text">
+                <span class="btn-title">Tra cứu công thức</span>
+                <span class="btn-desc">Hỗ trợ tra cứu công thức nhanh</span>
+            </div>
+        </a>
+
+        <div class="footer">
+            &copy; 2026 made by LamHuy
+        </div>
+    </div>
+
+</body>
+</html>
