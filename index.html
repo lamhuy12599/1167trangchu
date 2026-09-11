@@ -12,6 +12,10 @@
     --red:#ff453a;
     --orange:#ff9f45;
     --ink:#0c1210;
+    --mx: 50%;
+    --my: 18%;
+    --tiltx: 0deg;
+    --tilty: 0deg;
   }
 
   *{ box-sizing:border-box; margin:0; padding:0; }
@@ -31,6 +35,9 @@
     background:#eef1ef;
   }
 
+  /* ---------- SVG filter lives off-screen, never rendered directly ---------- */
+  svg.filters{ position:absolute; width:0; height:0; overflow:hidden; }
+
   /* ---------- Ambient liquid background ---------- */
   .bg{
     position:fixed;
@@ -41,10 +48,9 @@
   }
   .blob{
     position:absolute;
-    border-radius:50%;
     filter:blur(70px);
     opacity:0.55;
-    will-change:transform;
+    will-change:transform, border-radius;
   }
   .blob.b1{
     width:520px; height:520px;
@@ -64,51 +70,109 @@
     bottom:10%; left:8%;
     animation:float3 19s ease-in-out infinite;
   }
+  /* organic morphing border-radius on top of the drift, so the blobs actually
+     read as liquid rather than static painted circles */
   @keyframes float1{
-    0%,100%{ transform:translate(0,0) scale(1); }
-    50%{ transform:translate(60px,50px) scale(1.08); }
+    0%{ transform:translate(0,0) scale(1); border-radius:58% 42% 61% 39% / 41% 57% 43% 59%; }
+    33%{ transform:translate(50px,35px) scale(1.06); border-radius:41% 59% 47% 53% / 61% 39% 61% 39%; }
+    66%{ transform:translate(20px,60px) scale(0.97); border-radius:63% 37% 39% 61% / 45% 61% 39% 55%; }
+    100%{ transform:translate(0,0) scale(1); border-radius:58% 42% 61% 39% / 41% 57% 43% 59%; }
   }
   @keyframes float2{
-    0%,100%{ transform:translate(0,0) scale(1); }
-    50%{ transform:translate(-50px,-40px) scale(1.05); }
+    0%{ transform:translate(0,0) scale(1); border-radius:47% 53% 62% 38% / 53% 45% 55% 47%; }
+    33%{ transform:translate(-45px,-30px) scale(1.04); border-radius:60% 40% 44% 56% / 40% 62% 38% 60%; }
+    66%{ transform:translate(-20px,-55px) scale(0.96); border-radius:39% 61% 57% 43% / 58% 42% 58% 42%; }
+    100%{ transform:translate(0,0) scale(1); border-radius:47% 53% 62% 38% / 53% 45% 55% 47%; }
   }
   @keyframes float3{
-    0%,100%{ transform:translate(0,0) scale(1); }
-    50%{ transform:translate(30px,-30px) scale(0.95); }
+    0%{ transform:translate(0,0) scale(1); border-radius:50% 50% 40% 60% / 60% 40% 60% 40%; }
+    50%{ transform:translate(35px,-35px) scale(0.93); border-radius:60% 40% 55% 45% / 40% 55% 45% 60%; }
+    100%{ transform:translate(0,0) scale(1); border-radius:50% 50% 40% 60% / 60% 40% 60% 40%; }
   }
 
   @media (prefers-reduced-motion: reduce){
     .blob{ animation:none !important; }
   }
 
-  /* ---------- Glass panel ---------- */
-  .panel{
+  /* ---------- Panel wrapper: handles entrance + cursor tilt ---------- */
+  .panel-wrap{
     position:relative;
     z-index:1;
     width:100%;
     max-width:420px;
+    perspective:1200px;
+    animation: coalesce 0.9s cubic-bezier(.16,1,.3,1) both;
+  }
+  @keyframes coalesce{
+    0%{ opacity:0; transform:scale(0.82); filter:blur(14px); }
+    60%{ opacity:1; }
+    100%{ opacity:1; transform:scale(1); filter:blur(0); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .panel-wrap{ animation:none; }
+  }
+
+  /* ---------- Glass panel ---------- */
+  .panel{
+    position:relative;
     padding:36px 22px 26px;
     border-radius:34px;
-    background:linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.28));
-    backdrop-filter:blur(28px) saturate(180%);
-    -webkit-backdrop-filter:blur(28px) saturate(180%);
+    overflow:hidden;
     border:1px solid rgba(255,255,255,0.6);
+    transform: rotateX(var(--tiltx)) rotateY(var(--tilty));
+    transition: transform 0.25s cubic-bezier(.2,.8,.3,1);
     box-shadow:
       0 24px 60px -20px rgba(20,40,35,0.28),
       inset 0 1px 0 rgba(255,255,255,0.8),
       inset 0 -1px 12px rgba(255,255,255,0.15);
   }
 
-  /* thin brand stripe, refracted through the glass rather than pinned flat on top */
-  .panel::before{
-    content:'';
+  /* The actual "liquid glass" layer: this is the piece that refracts and
+     blurs whatever sits behind the panel. It carries the SVG distortion
+     filter. Crucially it has no border and sits slightly oversized inside
+     the panel's own overflow:hidden + border-radius — so the *frame* stays
+     a crisp, clean edge, and only the blurred content behind it ripples. */
+  .panel .glass{
     position:absolute;
+    inset:-16px;
+    z-index:0;
+    background:linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.28));
+    backdrop-filter:blur(24px) saturate(180%);
+    -webkit-backdrop-filter:blur(24px) saturate(180%);
+  }
+  @supports (filter: url(#liquid-distort)){
+    .panel .glass{
+      filter: url(#liquid-distort);
+    }
+  }
+
+  /* light that tracks the pointer across the glass, like a real refractive
+     highlight sliding over a curved surface */
+  .panel .sheen{
+    position:absolute;
+    inset:0;
+    z-index:1;
+    border-radius:inherit;
+    background: radial-gradient(circle 260px at var(--mx) var(--my), rgba(255,255,255,0.65), transparent 62%);
+    mix-blend-mode:screen;
+    pointer-events:none;
+  }
+
+  /* thin brand stripe, refracted through the glass rather than pinned flat on top */
+  .panel .stripe{
+    position:absolute;
+    z-index:2;
     top:0; left:14%;
     width:72%; height:3px;
     border-radius:3px;
     background:linear-gradient(to right, var(--green), var(--red), var(--orange));
     opacity:0.85;
     filter:blur(0.3px);
+  }
+
+  .panel .content{
+    position:relative;
+    z-index:2;
   }
 
   .brand{
@@ -163,7 +227,7 @@
     -webkit-backdrop-filter:blur(10px);
     backdrop-filter:blur(10px);
     overflow:hidden;
-    transition:transform 0.35s cubic-bezier(.2,.9,.3,1.2), box-shadow 0.35s ease, background 0.35s ease;
+    transition:transform 0.35s cubic-bezier(.2,.9,.3,1.2), box-shadow 0.35s ease, background 0.35s ease, border-radius 0.5s ease;
   }
 
   /* specular sheen sweep, only on interaction */
@@ -181,12 +245,15 @@
   .app-btn:hover{
     transform:translateY(-2px) scale(1.012);
     background:rgba(255,255,255,0.58);
+    /* a slightly irregular radius on hover — the same "droplet" language as
+       the ambient blobs, so the whole surface reads as one liquid material */
+    border-radius:26px 18px 26px 18px;
     box-shadow:
       0 12px 26px -10px rgba(20,30,28,0.22),
       inset 0 1px 0 rgba(255,255,255,0.85);
   }
   .app-btn:hover::after{ transform:translateX(160%) rotate(8deg); }
-  .app-btn:active{ transform:translateY(0) scale(0.99); }
+  .app-btn:active{ transform:translateY(0) scale(0.985); border-radius:18px; }
 
   .btn-icon{
     flex-shrink:0;
@@ -198,7 +265,9 @@
     font-size:22px;
     background:rgba(255,255,255,0.55);
     box-shadow:inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(0,0,0,0.05);
+    transition: border-radius 0.5s ease;
   }
+  .app-btn:hover .btn-icon{ border-radius:40%; }
 
   .btn-text{ text-align:left; min-width:0; }
   .btn-title{
@@ -241,72 +310,151 @@
 </head>
 <body>
 
+  <!-- Off-screen SVG filter: this is what actually bends light through the
+       glass. feTurbulence generates an organic noise field; feDisplacementMap
+       uses it to warp the panel's blurred backdrop, so the ambient blobs
+       behind the panel look genuinely refracted rather than just blurred. -->
+  <svg class="filters" aria-hidden="true">
+    <filter id="liquid-distort" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.006 0.009" numOctaves="2" seed="7" result="noise"/>
+      <feGaussianBlur in="noise" stdDeviation="4" result="softNoise"/>
+      <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="10" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </svg>
+
   <div class="bg">
     <div class="blob b1"></div>
     <div class="blob b2"></div>
     <div class="blob b3"></div>
   </div>
 
-  <div class="panel">
-    <div class="brand">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/4/40/7-eleven_logo.svg" alt="Logo">
+  <div class="panel-wrap" id="panelWrap">
+    <div class="panel" id="panel">
+      <div class="glass"></div>
+      <div class="sheen" id="sheen"></div>
+      <div class="stripe"></div>
+
+      <div class="content">
+        <div class="brand">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/4/40/7-eleven_logo.svg" alt="Logo">
+        </div>
+
+        <h1>Hệ thống nội bộ &mdash; 1167 Trương Định</h1>
+        <p class="subtitle">Chọn công cụ làm việc bên dưới</p>
+
+        <div class="app-list">
+          <a href="https://lamhuy12599.github.io/1167counting/" class="app-btn btn-6">
+            <div class="btn-icon">📊</div>
+            <div class="btn-text">
+              <span class="btn-title">Kiểm đếm tồn kho</span>
+              <span class="btn-desc">Kiểm đếm tồn kho, xuất báo cáo tạm</span>
+            </div>
+          </a>
+
+          <a href="https://lamhuy12599.github.io/1050kiemtragia/" class="app-btn btn-1">
+            <div class="btn-icon">🔍</div>
+            <div class="btn-text">
+              <span class="btn-title">Tra cứu sản phẩm</span>
+              <span class="btn-desc">Check giá, quét mã vạch &amp; return</span>
+            </div>
+          </a>
+
+          <a href="https://lamhuy12599.github.io/1167kiemdate/" class="app-btn btn-2">
+            <div class="btn-icon">📋</div>
+            <div class="btn-text">
+              <span class="btn-title">Kiểm date</span>
+              <span class="btn-desc">Kiểm date sản phẩm ca làm việc</span>
+            </div>
+          </a>
+
+          <a href="https://lamhuy12599.github.io/1167congthuc/" class="app-btn btn-3">
+            <div class="btn-icon">📖</div>
+            <div class="btn-text">
+              <span class="btn-title">Tra cứu công thức</span>
+              <span class="btn-desc">Hỗ trợ tra cứu công thức nhanh</span>
+            </div>
+          </a>
+
+          <a href="https://lamhuy12599.github.io/1167tagin/" class="app-btn btn-4">
+            <div class="btn-icon">🖨️</div>
+            <div class="btn-text">
+              <span class="btn-title">Barcode tag in</span>
+              <span class="btn-desc">Hỗ trợ scan barcode in tag</span>
+            </div>
+          </a>
+
+          <a href="https://lamhuy12599.github.io/1167timestamp/" class="app-btn btn-5">
+            <div class="btn-icon">📷</div>
+            <div class="btn-text">
+              <span class="btn-title">Camera timestamp</span>
+              <span class="btn-desc">Chụp ảnh báo cáo kèm giờ &amp; địa chỉ</span>
+            </div>
+          </a>
+        </div>
+
+        <div class="footer">&copy; 2026 made by LamHuy</div>
+      </div>
     </div>
-
-    <h1>Hệ thống nội bộ &mdash; 1167 Trương Định</h1>
-    <p class="subtitle">Chọn công cụ làm việc bên dưới</p>
-
-    <div class="app-list">
-      <a href="https://lamhuy12599.github.io/1167counting/" class="app-btn btn-6">
-        <div class="btn-icon">📊</div>
-        <div class="btn-text">
-          <span class="btn-title">Kiểm đếm tồn kho</span>
-          <span class="btn-desc">Kiểm đếm tồn kho, xuất báo cáo tạm</span>
-        </div>
-      </a>
-
-      <a href="https://lamhuy12599.github.io/1050kiemtragia/" class="app-btn btn-1">
-        <div class="btn-icon">🔍</div>
-        <div class="btn-text">
-          <span class="btn-title">Tra cứu sản phẩm</span>
-          <span class="btn-desc">Check giá, quét mã vạch &amp; return</span>
-        </div>
-      </a>
-
-      <a href="https://lamhuy12599.github.io/1167kiemdate/" class="app-btn btn-2">
-        <div class="btn-icon">📋</div>
-        <div class="btn-text">
-          <span class="btn-title">Kiểm date</span>
-          <span class="btn-desc">Kiểm date sản phẩm ca làm việc</span>
-        </div>
-      </a>
-
-      <a href="https://lamhuy12599.github.io/1167congthuc/" class="app-btn btn-3">
-        <div class="btn-icon">📖</div>
-        <div class="btn-text">
-          <span class="btn-title">Tra cứu công thức</span>
-          <span class="btn-desc">Hỗ trợ tra cứu công thức nhanh</span>
-        </div>
-      </a>
-
-      <a href="https://lamhuy12599.github.io/1167tagin/" class="app-btn btn-4">
-        <div class="btn-icon">🖨️</div>
-        <div class="btn-text">
-          <span class="btn-title">Barcode tag in</span>
-          <span class="btn-desc">Hỗ trợ scan barcode in tag</span>
-        </div>
-      </a>
-
-      <a href="https://lamhuy12599.github.io/1167timestamp/" class="app-btn btn-5">
-        <div class="btn-icon">📷</div>
-        <div class="btn-text">
-          <span class="btn-title">Camera timestamp</span>
-          <span class="btn-desc">Chụp ảnh báo cáo kèm giờ &amp; địa chỉ</span>
-        </div>
-      </a>
-    </div>
-
-    <div class="footer">&copy; 2026 made by LamHuy</div>
   </div>
+
+  <script>
+  (function(){
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    var wrap = document.getElementById('panelWrap');
+    var panel = document.getElementById('panel');
+
+    if (reduceMotion) return;
+
+    // target + current values, eased every frame for a smooth "liquid" feel
+    // rather than a highlight that snaps straight to the cursor.
+    var target = { mx: 50, my: 18, rx: 0, ry: 0 };
+    var current = { mx: 50, my: 18, rx: 0, ry: 0 };
+    var t = 0;
+
+    function applyPointer(clientX, clientY){
+      var rect = panel.getBoundingClientRect();
+      var px = (clientX - rect.left) / rect.width;   // 0..1
+      var py = (clientY - rect.top) / rect.height;    // 0..1
+      target.mx = px * 100;
+      target.my = py * 100;
+      // small tilt, capped so it stays subtle and premium rather than gimmicky
+      target.ry = (px - 0.5) * 8;
+      target.rx = (0.5 - py) * 8;
+    }
+
+    if (finePointer){
+      window.addEventListener('pointermove', function(e){
+        applyPointer(e.clientX, e.clientY);
+      });
+      panel.addEventListener('pointerleave', function(){
+        target.rx = 0; target.ry = 0;
+      });
+    }
+
+    function loop(){
+      // gentle autonomous drift for touch devices, so the glass still feels
+      // alive even without a mouse to react to
+      if (!finePointer){
+        t += 0.006;
+        target.mx = 50 + Math.sin(t) * 22;
+        target.my = 22 + Math.cos(t * 0.8) * 10;
+      }
+      current.mx += (target.mx - current.mx) * 0.08;
+      current.my += (target.my - current.my) * 0.08;
+      current.rx += (target.rx - current.rx) * 0.10;
+      current.ry += (target.ry - current.ry) * 0.10;
+
+      panel.style.setProperty('--mx', current.mx + '%');
+      panel.style.setProperty('--my', current.my + '%');
+      panel.style.setProperty('--tiltx', current.rx.toFixed(2) + 'deg');
+      panel.style.setProperty('--tilty', current.ry.toFixed(2) + 'deg');
+
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+  })();
+  </script>
 
 </body>
 </html>
