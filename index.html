@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Hệ Thống Nội Bộ Cửa hàng 1167 - Trương Định</title>
 <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/4/40/7-eleven_logo.svg" type="image/svg+xml">
 
@@ -35,142 +35,192 @@
     background:#eef1ef;
   }
 
-  /* ---------- SVG filter lives off-screen, never rendered directly ---------- */
-  svg.filters{ position:absolute; width:0; height:0; overflow:hidden; }
+  /* ---------- Top bar removed: Cycle 7 now lives inside the panel ---------- */
 
-  /* ---------- Ambient liquid background ---------- */
+  /* ---------- Ambient liquid background ----------
+     Simplified vs. the original: transform-only animation (no per-frame
+     border-radius morphing, which forces the browser to recompute the blur
+     mask every frame — the single biggest cost on older phones), fewer
+     blobs, lighter blur radius, and GPU-friendly hints. */
   .bg{
     position:fixed;
     inset:0;
     z-index:0;
     overflow:hidden;
     background:linear-gradient(160deg,#e9f3ef 0%,#eef1f5 45%,#fbeee6 100%);
+    contain:strict;
   }
   .blob{
     position:absolute;
-    filter:blur(70px);
-    opacity:0.55;
-    will-change:transform, border-radius;
+    filter:blur(46px);
+    opacity:0.5;
+    will-change:transform;
+    transform:translateZ(0);
+    border-radius:50%;
   }
   .blob.b1{
-    width:540px; height:540px;
+    width:480px; height:480px;
     background:radial-gradient(circle at 30% 30%, var(--green), transparent 70%);
     top:-160px; left:-140px;
-    animation:float1 13s ease-in-out infinite;
+    animation:float1 16s ease-in-out infinite;
   }
   .blob.b2{
-    width:480px; height:480px;
+    width:420px; height:420px;
     background:radial-gradient(circle at 60% 40%, var(--red), transparent 70%);
     bottom:-180px; right:-120px;
-    animation:float2 15s ease-in-out infinite;
+    animation:float2 18s ease-in-out infinite;
   }
   .blob.b3{
-    width:400px; height:400px;
+    width:340px; height:340px;
     background:radial-gradient(circle at 50% 50%, var(--orange), transparent 70%);
     bottom:10%; left:8%;
-    animation:float3 11s ease-in-out infinite;
+    animation:float3 14s ease-in-out infinite;
+    display:none; /* dropped by default on small/low-end screens, see media query below */
   }
-  .blob.b4{
-    width:260px; height:260px;
-    background:radial-gradient(circle at 45% 45%, var(--green), transparent 70%);
-    top:20%; right:6%;
-    opacity:0.4;
-    animation:float4 9s ease-in-out infinite;
-  }
-  /* organic morphing border-radius + rotation on top of the drift, so the
-     blobs read as restless liquid rather than static painted circles */
+
   @keyframes float1{
-    0%{ transform:translate(0,0) rotate(0deg) scale(1); border-radius:58% 42% 61% 39% / 41% 57% 43% 59%; }
-    25%{ transform:translate(90px,70px) rotate(14deg) scale(1.15); border-radius:41% 59% 47% 53% / 61% 39% 61% 39%; }
-    50%{ transform:translate(40px,130px) rotate(-10deg) scale(0.92); border-radius:63% 37% 39% 61% / 45% 61% 39% 55%; }
-    75%{ transform:translate(-60px,50px) rotate(8deg) scale(1.08); border-radius:50% 50% 35% 65% / 55% 40% 60% 45%; }
-    100%{ transform:translate(0,0) rotate(0deg) scale(1); border-radius:58% 42% 61% 39% / 41% 57% 43% 59%; }
+    0%{ transform:translate3d(0,0,0) scale(1); }
+    50%{ transform:translate3d(70px,100px,0) scale(1.08); }
+    100%{ transform:translate3d(0,0,0) scale(1); }
   }
   @keyframes float2{
-    0%{ transform:translate(0,0) rotate(0deg) scale(1); border-radius:47% 53% 62% 38% / 53% 45% 55% 47%; }
-    25%{ transform:translate(-95px,-65px) rotate(-16deg) scale(1.12); border-radius:60% 40% 44% 56% / 40% 62% 38% 60%; }
-    50%{ transform:translate(-40px,-130px) rotate(10deg) scale(0.9); border-radius:39% 61% 57% 43% / 58% 42% 58% 42%; }
-    75%{ transform:translate(60px,-45px) rotate(-8deg) scale(1.06); border-radius:55% 45% 60% 40% / 45% 55% 40% 60%; }
-    100%{ transform:translate(0,0) rotate(0deg) scale(1); border-radius:47% 53% 62% 38% / 53% 45% 55% 47%; }
+    0%{ transform:translate3d(0,0,0) scale(1); }
+    50%{ transform:translate3d(-70px,-95px,0) scale(1.06); }
+    100%{ transform:translate3d(0,0,0) scale(1); }
   }
   @keyframes float3{
-    0%{ transform:translate(0,0) rotate(0deg) scale(1); border-radius:50% 50% 40% 60% / 60% 40% 60% 40%; }
-    33%{ transform:translate(75px,-70px) rotate(18deg) scale(0.85); border-radius:60% 40% 55% 45% / 40% 55% 45% 60%; }
-    66%{ transform:translate(-55px,-30px) rotate(-14deg) scale(1.1); border-radius:42% 58% 48% 52% / 55% 45% 58% 42%; }
-    100%{ transform:translate(0,0) rotate(0deg) scale(1); border-radius:50% 50% 40% 60% / 60% 40% 60% 40%; }
+    0%{ transform:translate3d(0,0,0) scale(1); }
+    50%{ transform:translate3d(55px,-60px,0) scale(0.92); }
+    100%{ transform:translate3d(0,0,0) scale(1); }
   }
-  @keyframes float4{
-    0%{ transform:translate(0,0) scale(1); }
-    50%{ transform:translate(-40px,55px) scale(1.3); }
-    100%{ transform:translate(0,0) scale(1); }
+
+  /* Bring the 3rd blob back only on roomier / presumably more capable screens */
+  @media (min-width:520px){
+    .blob.b3{ display:block; }
   }
 
   @media (prefers-reduced-motion: reduce){
     .blob{ animation:none !important; }
   }
 
-  /* ---------- Panel wrapper: handles entrance + cursor tilt ---------- */
+  /* ---------- Panel wrapper: handles entrance ---------- */
   .panel-wrap{
     position:relative;
     z-index:1;
     width:100%;
     max-width:420px;
-    perspective:1200px;
-    animation: coalesce 0.9s cubic-bezier(.16,1,.3,1) both;
+    animation: coalesce 0.6s cubic-bezier(.16,1,.3,1) both;
   }
   @keyframes coalesce{
-    0%{ opacity:0; transform:scale(0.82); filter:blur(14px); }
-    60%{ opacity:1; }
-    100%{ opacity:1; transform:scale(1); filter:blur(0); }
+    0%{ opacity:0; transform:scale(0.9); }
+    100%{ opacity:1; transform:scale(1); }
   }
   @media (prefers-reduced-motion: reduce){
     .panel-wrap{ animation:none; }
   }
 
-  /* ---------- Glass panel ---------- */
+  /* ---------- Cycle 7 trigger — now sized/styled to match the app-btn
+     rows below it (see .app-btn), just with its own icon tint and a
+     divider to keep it visually grouped as "the special one". ---------- */
+  .cycle7-row{
+    margin-bottom:16px;
+  }
+  .cycle7-btn{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:14px 16px;
+    border-radius:22px;
+    border:1px solid rgba(255,255,255,0.55);
+    background:rgba(255,255,255,0.42);
+    -webkit-backdrop-filter:blur(8px);
+    backdrop-filter:blur(8px);
+    box-shadow:
+      0 6px 18px -8px rgba(20,30,28,0.16),
+      inset 0 1px 0 rgba(255,255,255,0.7);
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    font-family:inherit;
+    text-align:left;
+    transition:transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+  }
+  .cycle7-btn:hover{
+    transform:translateY(-2px);
+    background:rgba(255,255,255,0.58);
+  }
+  .cycle7-btn:active{ transform:translateY(0) scale(0.985); }
+  .cycle7-btn .cycle7-icon{
+    flex-shrink:0;
+    width:46px; height:46px;
+    border-radius:15px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    background:linear-gradient(135deg, rgba(0,168,132,0.28), rgba(255,159,69,0.28));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .cycle7-btn .cycle7-text{ text-align:left; min-width:0; }
+  .cycle7-btn .cycle7-title{
+    font-size:15px;
+    font-weight:600;
+    display:block;
+    color:#12241e;
+  }
+  .cycle7-btn .cycle7-desc{
+    font-size:12px;
+    color:#66756f;
+    font-weight:450;
+    display:block;
+    margin-top:2px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .cycle7-divider{
+    height:1px;
+    background:linear-gradient(to right, transparent, rgba(12,18,16,0.14), transparent);
+    margin-bottom:16px;
+  }
+
+  /* ---------- Glass panel ----------
+     backdrop-filter blur reduced from 24px to 14px: still reads as glass
+     but is far cheaper for the compositor on older GPUs. */
   .panel{
     position:relative;
     padding:36px 24px 30px;
     border-radius:34px;
     overflow:hidden;
     border:1px solid rgba(255,255,255,0.6);
-    transform: rotateX(var(--tiltx)) rotateY(var(--tilty));
-    transition: transform 0.25s cubic-bezier(.2,.8,.3,1);
     box-shadow:
       0 24px 60px -20px rgba(20,40,35,0.28),
       inset 0 1px 0 rgba(255,255,255,0.8),
       inset 0 -1px 12px rgba(255,255,255,0.15);
   }
 
-  /* The "liquid glass" layer: blurs and saturates whatever sits behind the
-     panel. It has no border and sits slightly oversized inside the panel's
-     own overflow:hidden + border-radius, so the *frame* is always a
-     perfectly clean curve — no SVG distortion is applied here anymore,
-     since warping right at a tight rounded corner made the curve read as
-     slightly uneven. The morphing background blobs now carry all the
-     "liquid" motion instead. */
   .panel .glass{
     position:absolute;
     inset:-16px;
     z-index:0;
-    background:linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0.28));
-    backdrop-filter:blur(24px) saturate(180%);
-    -webkit-backdrop-filter:blur(24px) saturate(180%);
+    background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.32));
+    backdrop-filter:blur(14px) saturate(160%);
+    -webkit-backdrop-filter:blur(14px) saturate(160%);
   }
 
-  /* light that tracks the pointer across the glass, like a real refractive
-     highlight sliding over a curved surface */
+  /* static-by-default sheen; only becomes pointer-reactive on capable,
+     fine-pointer devices (see script) */
   .panel .sheen{
     position:absolute;
     inset:0;
     z-index:1;
     border-radius:inherit;
-    background: radial-gradient(circle 260px at var(--mx) var(--my), rgba(255,255,255,0.65), transparent 62%);
+    background: radial-gradient(circle 260px at var(--mx) var(--my), rgba(255,255,255,0.6), transparent 62%);
     mix-blend-mode:screen;
     pointer-events:none;
   }
 
-  /* thin brand stripe, refracted through the glass rather than pinned flat on top */
   .panel .stripe{
     position:absolute;
     z-index:2;
@@ -179,7 +229,6 @@
     border-radius:3px;
     background:linear-gradient(to right, var(--green), var(--red), var(--orange));
     opacity:0.85;
-    filter:blur(0.3px);
   }
 
   .panel .content{
@@ -215,7 +264,11 @@
     font-weight:450;
   }
 
-  /* ---------- Glass buttons ---------- */
+  /* ---------- Buttons ----------
+     Dropped the ::after sheen-sweep pseudo-element sweep and the irregular
+     hover border-radius morph — both cheap in isolation but multiply badly
+     on a page with several buttons plus animated blobs. Kept the parts
+     that give tactile feedback (lift + scale + ripple on press). */
   .app-list{
     display:flex;
     flex-direction:column;
@@ -236,64 +289,44 @@
     box-shadow:
       0 6px 18px -8px rgba(20,30,28,0.16),
       inset 0 1px 0 rgba(255,255,255,0.7);
-    -webkit-backdrop-filter:blur(10px);
-    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(8px);
+    backdrop-filter:blur(8px);
     overflow:hidden;
-    transition:transform 0.35s cubic-bezier(.2,.9,.3,1.2), box-shadow 0.35s ease, background 0.35s ease, border-radius 0.5s ease;
-  }
-
-  /* specular sheen sweep, only on interaction */
-  .app-btn::after{
-    content:'';
-    position:absolute;
-    top:-50%; left:-30%;
-    width:40%; height:200%;
-    background:linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
-    transform:translateX(-140%) rotate(8deg);
-    transition:transform 0.7s ease;
-    pointer-events:none;
+    -webkit-tap-highlight-color:transparent;
+    transition:transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
   }
 
   .app-btn:hover{
-    transform:translateY(-2px) scale(1.012);
+    transform:translateY(-2px);
     background:rgba(255,255,255,0.58);
-    /* a slightly irregular radius on hover — the same "droplet" language as
-       the ambient blobs, so the whole surface reads as one liquid material */
-    border-radius:26px 18px 26px 18px;
     box-shadow:
       0 12px 26px -10px rgba(20,30,28,0.22),
       inset 0 1px 0 rgba(255,255,255,0.85);
   }
-  .app-btn:hover::after{ transform:translateX(160%) rotate(8deg); }
 
-  /* iOS-26-style press feedback: a springy squish that overshoots and
-     settles, playing on top of whatever transform :hover already set. */
   .app-btn.pressed{
-    animation: lgPress 0.5s cubic-bezier(.34,1.56,.64,1) both;
+    animation: lgPress 0.32s ease-out both;
   }
   @keyframes lgPress{
-    0%{ transform:scale(1); border-radius:22px; }
-    30%{ transform:scale(0.95,0.93); border-radius:32px 14px 32px 14px; }
-    58%{ transform:scale(1.02,1.03); border-radius:12px 32px 12px 32px; }
-    100%{ transform:scale(1); border-radius:22px; }
+    0%{ transform:scale(1); }
+    50%{ transform:scale(0.96); }
+    100%{ transform:scale(1); }
   }
 
-  /* a light "drop" that expands outward from wherever the finger/cursor
-     landed, like liquid rippling out from a touch point */
   .app-btn .ripple{
     position:absolute;
     border-radius:50%;
-    background:radial-gradient(circle, rgba(255,255,255,0.9), rgba(255,255,255,0) 70%);
+    background:radial-gradient(circle, rgba(255,255,255,0.85), rgba(255,255,255,0) 70%);
     transform:scale(0);
-    opacity:0.9;
+    opacity:0.85;
     pointer-events:none;
     mix-blend-mode:screen;
-    animation:lgRipple 0.6s ease-out forwards;
+    animation:lgRipple 0.45s ease-out forwards;
   }
   @keyframes lgRipple{
     to{ transform:scale(1); opacity:0; }
   }
-  .app-btn:active{ transform:translateY(0) scale(0.985); border-radius:18px; }
+  .app-btn:active{ transform:translateY(0) scale(0.985); }
 
   .btn-icon{
     flex-shrink:0;
@@ -305,9 +338,7 @@
     font-size:22px;
     background:rgba(255,255,255,0.55);
     box-shadow:inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(0,0,0,0.05);
-    transition: border-radius 0.5s ease;
   }
-  .app-btn:hover .btn-icon{ border-radius:40%; }
 
   .btn-text{ text-align:left; min-width:0; }
   .btn-title{
@@ -327,7 +358,6 @@
     text-overflow:ellipsis;
   }
 
-  /* individual tint per tool, kept subtle so glass still reads as glass */
   .btn-1 .btn-icon{ background:rgba(255,159,69,0.28); }
   .btn-2 .btn-icon{ background:rgba(0,168,132,0.24); }
   .btn-3 .btn-icon{ background:rgba(64,140,255,0.22); }
@@ -346,6 +376,106 @@
     .panel{ padding:30px 18px 24px; border-radius:28px; }
     .btn-title{ font-size:14px; }
   }
+
+  /* ---------- Cycle 7 bottom sheet ---------- */
+  .sheet-overlay{
+    position:fixed;
+    inset:0;
+    z-index:20;
+    background:rgba(10,20,16,0.38);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.2s ease;
+  }
+  .sheet-overlay.open{
+    opacity:1;
+    pointer-events:auto;
+  }
+
+  .sheet{
+    position:fixed;
+    left:50%;
+    bottom:0;
+    z-index:21;
+    width:100%;
+    max-width:420px;
+    background:#f6f8f7;
+    border-radius:26px 26px 0 0;
+    padding:20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+    transform:translate(-50%, 100%);
+    transition:transform 0.28s cubic-bezier(.2,.9,.3,1.1);
+    box-shadow:0 -12px 40px -12px rgba(15,25,20,0.3);
+  }
+  .sheet-overlay.open .sheet{
+    transform:translate(-50%, 0);
+  }
+
+  .sheet-handle{
+    width:40px; height:4px;
+    border-radius:3px;
+    background:rgba(12,18,16,0.18);
+    margin:0 auto 16px;
+  }
+
+  .sheet-title{
+    font-size:16px;
+    font-weight:650;
+    text-align:center;
+    color:#10231d;
+    margin-bottom:16px;
+  }
+
+  .sheet-options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .sheet-option{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:14px 16px;
+    border-radius:18px;
+    background:#ffffff;
+    border:1px solid rgba(12,18,16,0.08);
+    text-decoration:none;
+    color:var(--ink);
+    font-size:15px;
+    font-weight:600;
+    box-shadow:0 2px 10px rgba(15,25,20,0.05);
+    transition:transform 0.15s ease, background 0.15s ease;
+  }
+  .sheet-option:active{
+    transform:scale(0.98);
+    background:#f0f2f1;
+  }
+  .sheet-option .sheet-icon{
+    width:38px; height:38px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:18px;
+    flex-shrink:0;
+  }
+  .sheet-option.opt-1 .sheet-icon{ background:rgba(0,168,132,0.16); }
+  .sheet-option.opt-2 .sheet-icon{ background:rgba(255,159,69,0.2); }
+
+  .sheet-cancel{
+    display:block;
+    width:100%;
+    margin-top:14px;
+    padding:13px;
+    border:none;
+    border-radius:16px;
+    background:rgba(12,18,16,0.06);
+    color:#3c4842;
+    font-size:14.5px;
+    font-weight:600;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
 </style>
 </head>
 <body>
@@ -354,10 +484,10 @@
     <div class="blob b1"></div>
     <div class="blob b2"></div>
     <div class="blob b3"></div>
-    <div class="blob b4"></div>
   </div>
 
   <div class="panel-wrap" id="panelWrap">
+
     <div class="panel" id="panel">
       <div class="glass"></div>
       <div class="sheen" id="sheen"></div>
@@ -370,6 +500,17 @@
 
         <h1>Hệ thống nội bộ &mdash; 1167 Trương Định</h1>
         <p class="subtitle">Chọn công cụ làm việc bên dưới</p>
+
+        <div class="cycle7-row">
+          <button type="button" class="cycle7-btn app-btn" id="cycle7Btn">
+            <div class="cycle7-icon">🔁</div>
+            <div class="cycle7-text">
+              <span class="cycle7-title">Cycle 7</span>
+              <span class="cycle7-desc">Xem recap theo Cycle hoặc 7Cafe</span>
+            </div>
+          </button>
+        </div>
+        <div class="cycle7-divider"></div>
 
         <div class="app-list">
           <a href="https://lamhuy12599.github.io/1167counting/" class="app-btn btn-6">
@@ -426,72 +567,80 @@
     </div>
   </div>
 
+  <!-- Cycle 7 bottom sheet -->
+  <div class="sheet-overlay" id="sheetOverlay">
+    <div class="sheet" id="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Cycle 7</div>
+      <div class="sheet-options">
+        <a href="https://lamhuy12599.github.io/7cycle/" class="sheet-option opt-1">
+          <span class="sheet-icon">🔄</span>
+          Cycle recap
+        </a>
+        <a href="https://lamhuy12599.github.io/7cafe/" class="sheet-option opt-2">
+          <span class="sheet-icon">☕</span>
+          7Cafe recap
+        </a>
+      </div>
+      <button type="button" class="sheet-cancel" id="sheetCancel">Đóng</button>
+    </div>
+  </div>
+
   <script>
   (function(){
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    var wrap = document.getElementById('panelWrap');
     var panel = document.getElementById('panel');
 
-    if (reduceMotion) return;
+    // Performance note: the original ran a requestAnimationFrame loop
+    // forever (even on phones) just to drift a highlight around the glass.
+    // That constant repaint loop is the main thing that makes glass UIs
+    // feel choppy on older/lower-end devices. Since touch devices have no
+    // real pointer to react to anyway, we simply skip all of this on
+    // coarse-pointer (touch) devices and reduced-motion — the sheen just
+    // sits at its default position, which still looks fine.
+    if (reduceMotion || !finePointer) return;
 
-    // target + current values, eased every frame for a smooth "liquid" feel
-    // rather than a highlight that snaps straight to the cursor.
-    var target = { mx: 50, my: 18, rx: 0, ry: 0 };
-    var current = { mx: 50, my: 18, rx: 0, ry: 0 };
-    var t = 0;
+    var target = { mx: 50, my: 18 };
+    var current = { mx: 50, my: 18 };
+    var running = false;
 
     function applyPointer(clientX, clientY){
       var rect = panel.getBoundingClientRect();
-      var px = (clientX - rect.left) / rect.width;   // 0..1
-      var py = (clientY - rect.top) / rect.height;    // 0..1
+      var px = (clientX - rect.left) / rect.width;
+      var py = (clientY - rect.top) / rect.height;
       target.mx = px * 100;
       target.my = py * 100;
-      // small tilt, capped so it stays subtle and premium rather than gimmicky
-      target.ry = (px - 0.5) * 8;
-      target.rx = (0.5 - py) * 8;
+      if (!running){ running = true; requestAnimationFrame(loop); }
     }
 
-    if (finePointer){
-      window.addEventListener('pointermove', function(e){
-        applyPointer(e.clientX, e.clientY);
-      });
-      panel.addEventListener('pointerleave', function(){
-        target.rx = 0; target.ry = 0;
-      });
-    }
+    window.addEventListener('pointermove', function(e){
+      applyPointer(e.clientX, e.clientY);
+    });
 
     function loop(){
-      // gentle autonomous drift for touch devices, so the glass still feels
-      // alive even without a mouse to react to
-      if (!finePointer){
-        t += 0.006;
-        target.mx = 50 + Math.sin(t) * 22;
-        target.my = 22 + Math.cos(t * 0.8) * 10;
-      }
-      current.mx += (target.mx - current.mx) * 0.08;
-      current.my += (target.my - current.my) * 0.08;
-      current.rx += (target.rx - current.rx) * 0.10;
-      current.ry += (target.ry - current.ry) * 0.10;
-
+      current.mx += (target.mx - current.mx) * 0.12;
+      current.my += (target.my - current.my) * 0.12;
       panel.style.setProperty('--mx', current.mx + '%');
       panel.style.setProperty('--my', current.my + '%');
-      panel.style.setProperty('--tiltx', current.rx.toFixed(2) + 'deg');
-      panel.style.setProperty('--tilty', current.ry.toFixed(2) + 'deg');
 
-      requestAnimationFrame(loop);
+      // stop the loop once it's settled instead of running forever
+      if (Math.abs(target.mx - current.mx) > 0.1 || Math.abs(target.my - current.my) > 0.1){
+        requestAnimationFrame(loop);
+      } else {
+        running = false;
+      }
     }
-    requestAnimationFrame(loop);
   })();
 
-  // ---- iOS-26-style liquid press feedback on every button ----
+  // ---- lightweight press feedback on app buttons ----
   (function(){
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     document.querySelectorAll('.app-btn').forEach(function(btn){
       btn.addEventListener('pointerdown', function(e){
         var rect = btn.getBoundingClientRect();
-        var size = Math.max(rect.width, rect.height) * 1.6;
+        var size = Math.max(rect.width, rect.height) * 1.4;
         var x = (e.clientX != null ? e.clientX - rect.left : rect.width / 2);
         var y = (e.clientY != null ? e.clientY - rect.top : rect.height / 2);
 
@@ -504,13 +653,29 @@
         ripple.addEventListener('animationend', function(){ ripple.remove(); });
 
         btn.classList.remove('pressed');
-        void btn.offsetWidth; // restart the animation if tapped again quickly
+        void btn.offsetWidth;
         btn.classList.add('pressed');
       });
 
       btn.addEventListener('animationend', function(e){
         if (e.animationName === 'lgPress') btn.classList.remove('pressed');
       });
+    });
+  })();
+
+  // ---- Cycle 7 bottom sheet open/close ----
+  (function(){
+    var btn = document.getElementById('cycle7Btn');
+    var overlay = document.getElementById('sheetOverlay');
+    var cancel = document.getElementById('sheetCancel');
+
+    function open(){ overlay.classList.add('open'); }
+    function close(){ overlay.classList.remove('open'); }
+
+    btn.addEventListener('click', open);
+    cancel.addEventListener('click', close);
+    overlay.addEventListener('click', function(e){
+      if (e.target === overlay) close();
     });
   })();
   </script>
